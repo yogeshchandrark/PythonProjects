@@ -1,0 +1,40 @@
+from django.db import models
+
+# Create your models here.
+class inventory(models.Model):
+    siteID = models.CharField(max_length = 255)
+    locationID = models.CharField(max_length=255)
+    labID = models.CharField(max_length=255)
+    serial_number = models.IntegerField()
+    manufacturer = models.CharField(max_length = 255)
+    owner = models.EmailField()
+    device_type = models.CharField(max_length =255)
+    device_status = models.CharField(max_length =255)
+    floor = models.CharField(max_length =255)
+    row = models.CharField(max_length = 255)
+    rack = models.IntegerField()
+    ID = models.CharField(max_length=255)
+    assetno = models.CharField(max_length=255, unique = True)
+    partnumber = models.CharField(max_length=255)
+    equipowner = models.CharField(max_length=255)
+    manufacturer = models.CharField(max_length=255)
+    environment = models.CharField(max_length=255)
+    postion = models.CharField(max_length=255)
+    ziginscode = models.CharField(max_length=255)
+    hexfwver = models.CharField(max_length=255)
+    fwprovider = models.CharField(max_length=255)
+    manufacturerfwver = models.CharField(max_length=255)
+    goodsindate = models.CharField(max_length=255)
+    goodsindoc = models.CharField(max_length=255)
+    goodsoutdate = models.CharField(max_length=255)
+    remarks = models.CharField(max_length=255)
+    logicalentity = models.CharField(max_length=255)
+    scheduleentity = models.CharField(max_length=255)
+    goodsoutdoc = models.CharField(max_length=255)
+    guid = models.CharField(max_length=255)
+    type = models.CharField(max_length=255)
+    createddate = models.DateTimeField(auto_now=True)
+    licenseexpirydate = models.DateField()
+
+    def __str__(self):
+        return self.siteID
