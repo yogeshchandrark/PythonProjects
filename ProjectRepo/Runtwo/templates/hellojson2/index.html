@@ -1,0 +1,137 @@
+{% extends 'commons/base.html' %}
+
+{% load static %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'css/ag-grid.css' %}" type="text/css"/>
+<link rel="stylesheet" href="{% static 'css/ag-theme-balham.css' %}" type="text/css"/>
+<style media="screen">
+  .form-control{border: none !important;}
+</style>
+<script src="{% static 'js/ag-grid-community.min.noStyle.js' %}"></script>
+{% endblock %}
+
+{% block headertitle %}
+DjangoTemplates
+{% endblock %}
+
+{% block content %}
+<br/>
+<div class="form-control">
+  <p> Form control </p>
+</div>
+<div class="form-control text-right">
+  <button class="btn btn-sm btn-primary" onclick="search(); return false;">search</button>
+  <button class="btn btn-sm btn-primary" onclick="sendData(); return false;">update</button>
+</div>
+<div id="myGrid" style="height: 600px; width:100%; margin-top:10px;" class="ag-theme-balham"></div>
+
+<script type="text/javascript">
+  function getCookie(name) {
+      var cookieValue = null;
+      if (document.cookie && document.cookie != '') {
+          var cookies = document.cookie.split(';');
+          for (var i = 0; i < cookies.length; i++) {
+              var cookie = jQuery.trim(cookies[i]);
+              // Does this cookie string begin with the name we want?
+              if (cookie.substring(0, name.length + 1) == (name + '=')) {
+                  cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                  break;
+              }
+          }
+      }
+      return cookieValue;
+  }
+
+  var csrftoken = getCookie('csrftoken');
+
+  function csrfSafeMethod(method) {
+      // these HTTP methods do not require CSRF protection
+      return (/^(GET|HEAD|OPTIONS|TRACE)$/.test(method));
+  }
+
+  $.ajaxSetup({
+      crossDomain: false, // obviates need for sameOrigin test
+      beforeSend: function(xhr, settings) {
+          if (!csrfSafeMethod(settings.type)) {
+              xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+      }
+  });
+
+  function search(){
+    fetch("{% url 'hellojson2:getlist' %}").then(function(response) {
+      return response.json();
+    }).then(function(data) {
+      gridOptions.api.setRowData(data);
+    })
+  }
+
+
+  function sendData() {
+    var selectedNodes = gridOptions.api.getSelectedNodes()
+    var selectedData = selectedNodes.map( function(node) { return node.data })
+
+    if (selectedData.length == 0) {
+      alert("Please Select")
+      return;
+    }
+    $.ajax('/hellojson2/senddata/',
+      {
+        type: 'post',
+        data: { query: JSON.stringify(selectedData) },
+        'dataType': 'json'
+      }
+    )
+
+    .done(function(data) {
+      alert(JSON.stringify(data));
+    })
+
+    .fail(function( jqXHR, textStatus, errorThrown ) {
+      window.alert('Communication error occurred status=' + textStatus);
+    })
+    .always(function( jqXHR, textStatus ) {
+    });
+
+  }
+
+  // ag-grid: 列定義
+  // empidにcheckboxSelectionをセットすることで、checkboxを表示
+  // headerCheckboxSelectionは、ヘッダにcheckboxを表示
+  // empidは、リンクボタンで表示するようにしています。
+  var columns = [
+    {headerName: "Employee ID", field: "empid", headerCheckboxSelection: true, checkboxSelection: true, filter: true, editable: true,
+      cellRenderer: function(params) {
+        //将来的には、詳細表示などのURLをセットする。ひとまずgoogleのサイトを開く
+        return '<a href="https://www.google.com" target="_blank">'+ params.value+'</a>'
+      },
+    },
+    {headerName: "Employee Name", field: "empname", filter: true},
+    {headerName: "Email Address", field: "mailaddress", filter: true},
+    {headerName: "Department ID", field: "deptid", filter: true},
+    {headerName: "Department Name", field: "deptname", filter: true}
+  ];
+
+  //ag-grid: データ（JSON）
+  var data = {{data|safe}}
+
+  //ag-grid: Options
+  //複数行選択にしています。
+  var gridOptions = {
+    columnDefs: columns,
+    rowSelection: 'multiple'
+//    rowData: data
+  };
+
+  // ag-grid: lookup the container we want the Grid to use
+  var eGridDiv = document.querySelector('#myGrid');
+
+  // ag-grid: create the grid passing in the div to use together with the columns & data we want to use
+  new agGrid.Grid(eGridDiv, gridOptions);
+
+  // ag-grid: 初期表示時のデータをセットしておく。
+  gridOptions.api.setRowData(data);
+
+</script>
+{% endblock %}
